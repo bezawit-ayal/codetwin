@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CodeTwin — Code migration assistant</title>
+    <link rel="stylesheet" href="/static/styles.css?v=3" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="CodeTwin home"><span class="brand-mark">CT</span> CodeTwin</a>
+        <span class="status"><span class="dot"></span> Python → JavaScript</span>
+      </header>
+
+      <section class="intro">
+        <p class="eyebrow">CODE MIGRATION, WITH CHECKS</p>
+        <h1>Bring your code<br /><span>across languages.</span></h1>
+        <p class="subhead">Translate a function and review the choices behind the new version.</p>
+      </section>
+
+      <section class="workspace" aria-label="Code translation workspace">
+        <div class="editor-card">
+          <div class="panel-head"><span>YOUR CODE</span><span class="language">PYTHON</span><button id="edit-python" class="ask-ai-button" type="button">Ask AI <span aria-hidden="true">✳</span></button></div>
+          <textarea id="source" spellcheck="false" aria-label="Python source code">def greet(name):
+    return "Hello, " + name</textarea>
+        </div>
+        <div class="editor-card output-card">
+          <div class="panel-head"><span>TRANSLATION</span><span class="language target">JAVASCRIPT</span></div>
+          <pre id="output" contenteditable="true" role="textbox" aria-label="JavaScript translation" aria-multiline="true" spellcheck="false">Your translated code will appear here.</pre>
+        </div>
+      </section>
+
+      <div class="actions">
+        <p id="message" role="status">Start with a small, self-contained function.</p>
+        <div class="action-buttons">
+          <button id="translate" type="button"><span>Translate with AI</span><span aria-hidden="true">→</span></button>
+          <button id="translate-offline" class="secondary-button" type="button"><span>Translate offline</span><span aria-hidden="true">↗</span></button>
+        </div>
+      </div>
+      <section class="checks">
+        <div class="checks-heading"><div><p class="eyebrow">BEHAVIOR CHECK</p><h2>Does it act the same?</h2></div><span class="docker-tag">RUNS IN DOCKER</span></div>
+        <p class="checks-copy">Provide test inputs. CodeTwin runs both functions in isolated containers and compares their outputs.</p>
+        <div class="check-fields">
+          <label>FUNCTION NAME<input id="function-name" value="greet" /></label>
+          <div class="test-input-editor">
+            <label for="test-cases">TEST INPUTS <span class="hint">JSON array of argument arrays</span></label>
+            <textarea id="test-cases" spellcheck="false">[{"args":["Ada"]},{"args":[""]}]</textarea>
+            <div class="suggestion-action"><button id="suggest-tests" class="secondary-button" type="button"><span>Suggest test inputs</span><span aria-hidden="true">✳</span></button><p id="suggestion-message" role="status">Suggestions are checked against the function’s positional parameters. Review them before running.</p></div>
+          </div>
+        </div>
+        <div class="check-action"><button id="check" type="button"><span>Run behavior checks</span><span aria-hidden="true">↗</span></button><p id="check-message" role="status">Only the supplied test inputs are checked.</p></div>
+        <div id="check-results" aria-live="polite"></div>
+      </section>
+      <section class="explanation" aria-live="polite">
+        <div class="explanation-icon">✳</div>
+        <div><h2>Translation notes</h2><p id="notes">The first version focuses on Python → JavaScript. Review the result before using it.</p></div>
+      </section>
+      <footer>CodeTwin gives you a starting point. Review generated code before using it.</footer>
+    </main>
+    <dialog id="python-ai-dialog" class="ai-dialog" aria-labelledby="python-ai-title">
+      <div class="ai-dialog-head"><h2 id="python-ai-title">Ask AI to write Python</h2><button id="close-python-ai" class="dialog-close" type="button" aria-label="Close">×</button></div>
+      <p>Describe the Python code you want or the change you need.</p>
+      <label class="visually-hidden" for="python-instruction">Your Python request</label>
+      <textarea id="python-instruction" rows="4" aria-label="Your Python request" placeholder="For example: Write a function that checks whether a number is even."></textarea>
+      <p id="python-edit-message" class="dialog-message" role="status">The AI will use your current Python code as context.</p>
+      <button id="submit-python-edit" type="button"><span>Write Python code</span><span aria-hidden="true">→</span></button>
+    </dialog>
+    <script src="/static/app.js?v=4"></script>
+  </body>
+</html>
