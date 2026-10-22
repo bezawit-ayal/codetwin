@@ -1,179 +1,80 @@
 # CodeTwin
 
-**Translate Python functions into JavaScript and check whether they behave alike.**
+CodeTwin translates small Python functions into JavaScript, then compares both versions using the same test inputs.
 
-CodeTwin is a code migration assistant designed to help developers move small, self-contained Python functions to JavaScript. It combines AI-assisted translation with behavior checks that run both versions against the same test inputs.
+> CodeTwin is an early prototype. It supports Python → JavaScript. Passing tests do not prove that two programs are equivalent.
 
-The goal is to make code migration easier to review. Instead of relying on the translated code alone, developers can compare the observed outputs of both implementations and identify cases where their behavior differs.
+## What it can do
 
-## Why CodeTwin?
+- Translate code with an AI provider such as Ollama running locally.
+- Translate a limited set of Python syntax without AI.
+- Ask AI to write or edit a Python function and suggest test inputs.
+- Run both functions with the same inputs and show where their results differ.
 
-Translating code between programming languages is not always a direct, line-by-line process. Differences in data types, language syntax, and runtime behavior can introduce unexpected results.
+## Run on Windows
 
-CodeTwin addresses this problem by bringing translation and testing into one workflow. Developers can translate a function, prepare test inputs, run both implementations, and inspect the results before deciding whether the translated code is ready to use.
+You need Python 3.11 or newer. Docker Desktop is needed for behavior checks. Ollama is optional and can provide AI locally.
 
-## Features
+Clone this repository, then open **Command Prompt** in the new `codetwin` folder:
 
-- **AI-assisted translation** — Translate Python functions into JavaScript using a configurable OpenAI-compatible API.
-- **Offline translation** — Convert a limited subset of Python syntax without requiring an AI provider.
-- **AI-powered Python editing** — Ask AI to create or revise the Python source before translation.
-- **Test case suggestions** — Generate suggested inputs to help evaluate how the original and translated functions behave.
-- **Behavior checks** — Run both implementations against the same inputs and compare their observed results.
-- **Editable test cases** — Review and modify suggested inputs before running the checks.
-- **Isolated execution** — Execute Python and JavaScript in separate, short-lived Docker containers with network access disabled and resource limits applied.
-- **Clear limitations** — Identify unsupported offline syntax and report observed test results without claiming mathematical equivalence.
-
-## How It Works
-
-1. Write or edit a Python function.
-2. Translate the function into JavaScript using the AI service or the offline translator.
-3. Add your own test inputs or request suggestions.
-4. Review the suggested inputs and explanations.
-5. Run behavior checks when you are ready.
-6. Compare the results and investigate any differences.
-
-CodeTwin is intended to support developer review, not replace it. Passing the available tests does not prove that two programs are equivalent for every possible input.
-
-## Technology Stack
-
-| Technology | Purpose |
-|---|---|
-| Python | Backend implementation and translation logic |
-| FastAPI | HTTP API and application backend |
-| JavaScript | Target language for translated functions |
-| HTML, CSS, and JavaScript | Browser interface |
-| OpenAI-compatible API | AI-assisted translation, editing, and test suggestions |
-| Docker | Isolated execution of behavior checks |
-| Uvicorn | Local application server |
-
-## Getting Started
-
-### Requirements
-
-Before running CodeTwin, make sure you have:
-
-- Python 3.11 or newer
-- Docker Desktop, running before you execute behavior checks
-- Access to an OpenAI-compatible API provider for AI-powered features
-
-Offline translation does not require an AI provider. AI-powered features require a compatible provider and valid configuration.
-
-### 1. Clone the repository
-
-```bash
-git clone <your-repository-url>
+```bat
+git clone https://github.com/bezawit-ayal/codetwin.git
 cd codetwin
 ```
 
-Replace `<your-repository-url>` with your GitHub repository URL.
+Create a Python environment and install CodeTwin's dependencies:
 
-### 2. Create a virtual environment
-
-**Windows PowerShell**
-
-```powershell
+```bat
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.venv\Scripts\activate.bat
+python -m pip install -r requirements.txt
 ```
 
-**macOS or Linux**
+### Use AI with Ollama
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
+Install and open [Ollama for Windows](https://ollama.com/download/windows). In Command Prompt, download the model:
+
+```bat
+ollama pull qwen2.5-coder:3b
 ```
 
-### 3. Install dependencies
+Set the Ollama connection and start CodeTwin:
 
-```bash
-pip install -r requirements.txt
+```bat
+set "CODETWIN_BASE_URL=http://localhost:11434/v1"
+set "CODETWIN_API_KEY=ollama"
+set "CODETWIN_MODEL=qwen2.5-coder:3b"
+python -m uvicorn app.main:app --reload
 ```
 
-### 4. Configure the AI provider
+Keep this window open. Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser. The settings above last only for this Command Prompt window. For another compatible AI provider, use that provider's base URL, API key, and model.
 
-Use `.env.example` as a reference for the required configuration:
+### Use offline translation
 
-```env
-CODETWIN_API_KEY=your_api_key
-CODETWIN_BASE_URL=your_provider_base_url
-CODETWIN_MODEL=your_model_name
+You do not need an AI provider for **Translate offline**. If CodeTwin is already running, choose **Translate offline**. Otherwise, open Command Prompt in the project folder, activate the environment, and start the app:
+
+```bat
+.venv\Scripts\activate.bat
+python -m uvicorn app.main:app --reload
 ```
 
-Set these values in your local environment before starting the application. The current scaffold does not load `.env` automatically, so simply creating that file is not sufficient.
+Offline translation supports only a limited set of Python syntax.
 
-Keep your API key private. Never commit real credentials to GitHub.
+## Check behavior
 
-### 5. Start the application
+Start Docker Desktop, then choose **Run behavior checks** in CodeTwin. It runs both functions in separate Docker containers and compares their results for the inputs you supplied. Docker may download the required images the first time.
 
-```bash
-uvicorn app.main:app --reload
-```
+The results show what happened for those test inputs only; they do not guarantee that the programs behave identically in every situation.
 
-Open the application in your browser:
+## Current limits
 
-http://127.0.0.1:8000
+- Python → JavaScript only.
+- Small, self-contained functions, not full projects.
+- AI features need a configured provider.
+- Behavior checks need Docker Desktop.
 
-## API Endpoints
+## Feedback
 
-The initial backend exposes the following routes:
+Found a problem or have an idea? Open an issue on this repository. Include a small code example and steps to reproduce it.
 
-| Endpoint | Purpose |
-|---|---|
-| `/api/translate` | AI-assisted Python-to-JavaScript translation |
-| `/api/translate/offline` | Translation using the supported offline syntax subset |
-| `/api/edit/python` | AI-assisted creation or revision of Python source |
-| `/api/suggest-tests` | Suggest test inputs for the selected function |
-| `/api/check` | Run behavior checks on both implementations |
-
-AI-dependent endpoints require valid provider configuration. Behavior checks require Docker Desktop to be running.
-
-## Behavior Checking and Safety
-
-CodeTwin compares the observed results of the Python and JavaScript implementations using the same test inputs.
-
-To reduce execution risks, each implementation runs in a short-lived Docker container configured with:
-
-- Network access disabled
-- A read-only filesystem
-- Resource limits
-- Separate execution environments for each language
-
-These restrictions reduce risk but do not guarantee complete isolation. Docker configuration, host security, input validation, and process management still matter.
-
-**Important:** Do not expose the local execution service as a public API without a thorough security review. Treat source code and test inputs as untrusted, and review translated code before using it in production.
-
-## Current Scope and Limitations
-
-CodeTwin is an early-stage project. Its first milestone focuses on small, self-contained functions and a single migration direction: **Python to JavaScript**.
-
-Current limitations include:
-
-- The offline translator supports only a limited subset of Python syntax.
-- AI translation quality depends on the configured provider and model.
-- Suggested test inputs may miss important edge cases.
-- Behavior checks cover only the inputs actually tested.
-- Differences between Python and JavaScript runtimes may require manual adjustments.
-- A passing test suite does not establish formal program equivalence.
-
-The project is being developed incrementally, with correctness, useful test coverage, and clear reporting taking priority over supporting every language feature.
-
-## Project Documentation
-
-- [Project Plan](PROJECT_PLAN.md) — Scope, development stages, evaluation strategy, and guidance for solo development.
-- [Codebase Guide](CODEBASE_GUIDE.md) — An explanation of the backend, offline translator, browser interface, behavior checker, and supporting files.
-
-## Contributing
-
-CodeTwin is being developed incrementally. Improvements to translation accuracy, edge-case handling, test coverage, error reporting, and execution safety are valuable contributions.
-
-Before proposing a change, run the relevant checks and document any new limitations or requirements.
-
-## Project Status
-
-CodeTwin is in its initial development stage. The first milestone focuses on building a practical workflow for translating small Python functions into JavaScript and comparing their observed behavior.
-
-The priority is to make the results understandable, reproducible, and useful to developers before expanding the supported syntax or migration directions.
-
-## License
-
-No license has been specified yet. Add a `LICENSE` file before presenting the project as open source or defining reuse permissions.
+See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the project roadmap.
